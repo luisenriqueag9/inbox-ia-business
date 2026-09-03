@@ -1,0 +1,41 @@
+﻿# DECISIONS
+
+Registro de decisiones tecnicas del proyecto Inbox IA Business.
+
+---
+
+1. **Frontend:** React + TypeScript.
+   Ecosistema maduro, tipado estatico, gran soporte de herramientas.
+
+2. **Herramienta de desarrollo frontend:** Vite.
+   Builds rapidos en desarrollo, configuracion minima, soporte nativo de React + TS.
+
+3. **Backend:** Python + FastAPI.
+   Alto rendimiento asincrono, validacion automatica con Pydantic, documentacion OpenAPI integrada.
+
+4. **API inicial:** REST.
+   Suficiente para el MVP; GraphQL o WebSockets se evaluaran si el producto lo requiere.
+
+5. **Base de datos futura del MVP:** PostgreSQL.
+   Relacional, robusto, amplio soporte en el ecosistema Python.
+
+6. **Arquitectura multiempresa desde el modelo de datos.**
+   El esquema de base de datos contemplara multitenancy desde el inicio para evitar migraciones costosas.
+
+7. **Los recursos empresariales deberan estar asociados a `company_id`.**
+   Toda entidad de negocio llevara referencia explicita a la empresa propietaria.
+
+8. **La autorizacion multiempresa sera validada siempre en backend.**
+   El frontend nunca tomara decisiones de acceso; solo el backend filtra por `company_id`.
+
+9. **Las API keys y credenciales externas nunca estaran expuestas al frontend.**
+   Toda comunicacion con servicios externos se proxia a traves del backend.
+
+10. **La IA no enviara mensajes automaticamente durante el MVP.**
+    La IA sugerira respuestas; un agente humano siempre aprobara y enviara.
+
+11. **WhatsApp y otras redes sociales quedan fuera hasta completar las funciones correspondientes de Fase 1.**
+    Se priorizara la logica de negocio central antes de integrar canales externos.
+
+12. **Se priorizara simplicidad y cambios pequenos sobre arquitectura especulativa.**
+    No se crearan carpetas, abstracciones ni dependencias que no sean necesarias en la version actual.
