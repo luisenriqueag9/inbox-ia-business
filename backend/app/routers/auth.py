@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
 from app.config import get_cookie_secure
 from sqlalchemy.orm import Session as DBSession
 from sqlalchemy import select
@@ -83,3 +83,41 @@ def register(request: RegisterRequest, db: DBSession = Depends(get_db)):
 @router.get("/me", response_model=LoginResponse)
 def me(current_user: User = Depends(get_current_user)):
     return LoginResponse(company=current_user.company, user=current_user)
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    response: Response,
+    session_token: str | None = Cookie(default=None, alias="session"),
+    db: DBSession = Depends(get_db),
+):
+    
+    if session_token is None:
+        
+        response.delete_cookie(
+            key="session",
+            path="/",
+            secure=get_cookie_secure(),
+            httponly=True,
+            samesite="lax",
+        )
+        return
+
+    token_hash = hash_session_token(session_token)
+    stmt = select(SessionModel).where(SessionModel.token_hash == token_hash)
+    session_obj = db.execute(stmt).scalars().first()
+    if session_obj:
+        try:
+            db.delete(session_obj)
+            db.commit()
+        except Exception:
+            db.rollback()
+            raise
+    
+    response.delete_cookie(
+        key="session",
+        path="/",
+        secure=get_cookie_secure(),
+        httponly=True,
+        samesite="lax",
+    )
