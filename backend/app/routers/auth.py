@@ -1,15 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session as DBSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.database import get_db
-from app.schemas import RegisterRequest, RegisterResponse
-from app.models import Company, CompanyStatus, User
-from app.security import hash_password, verify_password
+from app.schemas import RegisterRequest, RegisterResponse, LoginRequest, LoginResponse
+from app.models import Company, CompanyStatus, User, Session as SessionModel
+from app.security import hash_password, verify_password, generate_session_token, hash_session_token
+from datetime import datetime, timezone, timedelta
 
 
-def authenticate_user(email: str, password: str, db: Session) -> User:
+def authenticate_user(email: str, password: str, db: DBSession) -> User:
     """Valida credenciales y estado de la empresa.
 
     - Busca el usuario por email.
@@ -37,7 +38,7 @@ def authenticate_user(email: str, password: str, db: Session) -> User:
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/register", status_code=status.HTTP_201_CREATED, response_model=RegisterResponse)
-def register(request: RegisterRequest, db: Session = Depends(get_db)):
+def register(request: RegisterRequest, db: DBSession = Depends(get_db)):
     # 1. Verificar si el email ya existe
     stmt = select(User).where(User.email == request.email)
     existing_user = db.execute(stmt).scalars().first()
@@ -80,3 +81,26 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
         raise
 
     return RegisterResponse(company=company, user=user)
+
+
+@router.post("/login", response_model=LoginResponse)
+def login(request: LoginRequest, db: DBSession = Depends(get_db)):
+    user = authenticate_user(request.email, request.password, db)
+
+    raw_token = generate_session_token()
+    token_hash = hash_session_token(raw_token)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+
+    new_session = SessionModel(
+        user_id=user.id,
+        token_hash=token_hash,
+        expires_at=expires_at
+    )
+    try:
+        db.add(new_session)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    return LoginResponse(company=user.company, user=user)
