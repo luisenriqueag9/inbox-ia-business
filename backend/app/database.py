@@ -1,8 +1,10 @@
+from typing import Generator
 import os
 from pathlib import Path
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker, Session
 
 # Carga .env desde la raiz del repositorio (un nivel arriba de backend/).
 # En produccion las variables de entorno se inyectan directamente; load_dotenv
@@ -29,6 +31,15 @@ if DATABASE_URL.startswith("postgresql://"):
 # pool_pre_ping=True verifica la conexion antes de usarla.
 engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
 
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db() -> Generator[Session, None, None]:
+    """Provee una sesion de base de datos SQLAlchemy por request."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 def check_db_connection() -> None:
     """Ejecuta SELECT 1 para verificar la conectividad con la base de datos."""
