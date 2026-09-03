@@ -116,3 +116,32 @@ Incorporar PostgreSQL como base de datos de desarrollo local antes de implementa
 - Se incluye healthcheck con `pg_isready` para garantizar que el servicio este listo antes de conectar el backend.
 - `restart: unless-stopped` es adecuado para desarrollo local sin querer reinicio automatico permanente.
 - `DATABASE_URL` se documenta en `.env.example` como variable de configuracion para proporcionar al backend la URL de conexion. El driver de conexion se configuro a `postgresql+psycopg://` internamente en SQLAlchemy.
+
+---
+
+## Dia 3 — v0.0.3 (en curso)
+
+Fecha: 2026-09-03
+
+### Objetivo
+
+Implementar el registro de usuarios (Company + User) y preparar la base de datos para manejar sesiones.
+
+### Completado
+
+- Incorporacion de pwdlib con Argon2 para el hashing seguro de contraseñas.
+- Implementacion de sesion de SQLAlchemy para requests (`get_db` / `SessionLocal`).
+- Creacion de schemas Pydantic para el registro con validaciones (ej. EmailStr).
+- Implementacion del endpoint `POST /auth/register`.
+- Transaccion atomica para la creacion conjunta de `Company` y su primer `User`.
+- Manejo de duplicados y errores de escritura (rollback y retornos 409).
+- Eleccion de arquitectura de autenticacion: sesiones opacas server-side.
+- Definicion del modelo de base de datos `Session`.
+- Generacion de migracion Alembic (`4369b716bb72_create_sessions.py`).
+- Ciclo de validacion exitoso: upgrade -> downgrade -> upgrade.
+- Verificacion de constraints `FK` y `UNIQUE` sobre la tabla de sesiones en PostgreSQL.
+- Comprobacion sin diferencias de `alembic check`.
+
+### Proximo paso
+
+- Implementar generacion y hashing seguro del token de sesion.

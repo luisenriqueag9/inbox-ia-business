@@ -1,8 +1,8 @@
 # PROJECT STATE
 
 **Proyecto:** Inbox IA Business
-**Version actual:** v0.0.2
-**Fase actual:** Fase 1 - MVP
+**Version actual:** v0.0.3 — EN CURSO
+**Fase actual:** Fase 1 / MVP
 
 ---
 
@@ -30,12 +30,34 @@ Establecer los cimientos tecnicos y comprobar que frontend y backend pueden ejec
 
 ---
 
+## Completado en v0.0.3 (hasta el momento)
+
+- Preparación de sesiones SQLAlchemy mediante SessionLocal/get_db.
+- Hashing seguro de contraseñas con Argon2 mediante pwdlib.
+- Schemas Pydantic para registro.
+- POST `/auth/register`.
+- Creación atómica de Company + primer User.
+- Detección de email duplicado.
+- Rollback ante errores de integridad/escritura.
+- Modelo Session.
+- Migración Alembic para sessions.
+- Validación upgrade -> downgrade -> upgrade de migración.
+- Alembic check limpio.
+- Decisión de autenticación mediante sesiones opacas server-side persistidas en PostgreSQL y transportadas mediante cookie HttpOnly.
+
+---
+
 ## Pendiente para proximas versiones
 
-- **SIGUIENTE TAREA:** Flujo de registro de usuarios y autenticacion inicial.
-- Registro de usuarios (logica y endpoints).
-- Autenticacion.
-- Creacion de empresa.
+- **SIGUIENTE TAREA:** Implementar generación y hashing seguro del token de sesión.
+- Generación criptográficamente segura del token de sesión.
+- Hash determinista del token para token_hash.
+- POST `/auth/login`.
+- Creación/configuración de cookie HttpOnly.
+- Autenticación de requests.
+- Autorización/aislamiento multiempresa basado en usuario autenticado.
+- POST `/auth/logout`.
+- Frontend de registro/login.
 - Mensajes manuales.
 - Bandeja de entrada.
 - Clasificacion mediante IA.
