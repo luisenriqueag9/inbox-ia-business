@@ -1,7 +1,7 @@
 # PROJECT STATE
 
 **Proyecto:** Inbox IA Business
-**Version actual:** v0.0.2 (en curso)
+**Version actual:** v0.0.2
 **Fase actual:** Fase 1 - MVP
 
 ---
@@ -20,21 +20,20 @@ Establecer los cimientos tecnicos y comprobar que frontend y backend pueden ejec
 
 ---
 
-## En curso — v0.0.2
+## Completado en v0.0.2
 
-- PostgreSQL 16.9 para desarrollo local configurado y validado mediante Docker Compose (puerto host 5434).
-  - Contenedor alcanza estado `healthy`.
-  - Persistencia mediante volumen Docker verificada (`inbox_ia_postgres_data`).
-- Conexion FastAPI -> PostgreSQL completada y validada (SQLAlchemy 2.x + Psycopg 3).
-- Pendiente: configurar Alembic.
-- Pendiente: definir modelos multiempresa iniciales.
+- PostgreSQL 16.9 para desarrollo local configurado y validado mediante Docker Compose.
+- Conexion FastAPI -> PostgreSQL completada (SQLAlchemy 2.x + Psycopg 3).
+- Alembic configurado y utilizando la conexion central del backend.
+- Modelos iniciales multiempresa (Company y User) definidos en una unica Base declarativa.
+- Primera migracion generada, validada (upgrade/downgrade exitoso) y aplicada en HEAD.
 
 ---
 
 ## Pendiente para proximas versiones
 
-- Modelo multiempresa (SQLAlchemy + Alembic).
-- Registro de usuarios.
+- **SIGUIENTE TAREA:** Flujo de registro de usuarios y autenticacion inicial.
+- Registro de usuarios (logica y endpoints).
 - Autenticacion.
 - Creacion de empresa.
 - Mensajes manuales.

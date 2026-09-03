@@ -63,7 +63,7 @@ Inicializar/controlar correctamente el repositorio Git y crear el primer commit 
 
 ---
 
-## Dia 2 — v0.0.2 (en curso)
+## Dia 2 — v0.0.2
 
 Fecha: 2026-09-03
 
@@ -78,6 +78,11 @@ Incorporar PostgreSQL como base de datos de desarrollo local antes de implementa
 - Infraestructura PostgreSQL validada manualmente (ver seccion Validaciones).
 - Conexion FastAPI -> PostgreSQL implementada con SQLAlchemy 2.x y Psycopg 3.
 - Endpoint `/health/db` para verificar disponibilidad de base de datos.
+- Configuracion de Alembic en backend integrada con variables de entorno.
+- Creacion de Base declarativa, modelo Company y modelo User.
+- Generacion de primera migracion Alembic (`65c02fe1325e`).
+- Correccion manual de migracion en downgrade() para eliminar el Enum PostgreSQL `companystatus`.
+- Prueba completa de ciclo de migracion en entorno local.
 
 ### Validaciones realizadas
 
@@ -93,10 +98,13 @@ Incorporar PostgreSQL como base de datos de desarrollo local antes de implementa
 - Conexion mediante `app.database` (SQLAlchemy, `SELECT 1`): OK.
 - `GET /health/db` devuelve HTTP 200 con `{"status":"ok","database":"reachable"}`.
 - `GET /` y `GET /health` continuan funcionando correctamente (HTTP 200).
+- Upgrade de migracion de Alembic: OK (tablas e hilos Enum creados).
+- Downgrade de migracion a base: OK (tablas y Enum completamente revertidos).
+- Upgrade de restauracion a head: OK. Estado de BD comprobado en `65c02fe1325e (head)`.
 
 ### Proximo paso
 
-- Configurar Alembic y definir los primeros modelos multiempresa.
+- Comenzar flujo de registro de usuarios y autenticacion.
 
 ### Decisiones de esta sesion
 
