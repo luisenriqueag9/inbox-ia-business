@@ -54,3 +54,6 @@ Registro de decisiones tecnicas del proyecto Inbox IA Business.
 
 17. **Se priorizara simplicidad y cambios pequenos sobre arquitectura especulativa.**
     No se crearan carpetas, abstracciones ni dependencias que no sean necesarias en la version actual.
+
+18. **Autenticación mediante sesiones opacas server-side.**
+    Para el MVP, la autenticación web se realizará mediante sesiones almacenadas en PostgreSQL y expuestas mediante cookie HttpOnly, evitando JWT y localStorage. El identificador (`token_hash`) se persiste de forma segura (hasheado) sin guardar el token en texto claro, y la empresa se resuelve a través de la relación de `User` en lugar de duplicar `company_id` en la sesión.
