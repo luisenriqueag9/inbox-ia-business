@@ -22,12 +22,12 @@ Establecer los cimientos tecnicos y comprobar que frontend y backend pueden ejec
 
 ## En curso — v0.0.2
 
-- PostgreSQL 16.9 para desarrollo local configurado y validado mediante Docker Compose.
+- PostgreSQL 16.9 para desarrollo local configurado y validado mediante Docker Compose (puerto host 5434).
   - Contenedor alcanza estado `healthy`.
   - Persistencia mediante volumen Docker verificada (`inbox_ia_postgres_data`).
-- Pendiente: integrar SQLAlchemy y Alembic en el backend.
+- Conexion FastAPI -> PostgreSQL completada y validada (SQLAlchemy 2.x + Psycopg 3).
+- Pendiente: configurar Alembic.
 - Pendiente: definir modelos multiempresa iniciales.
-- Pendiente: conectar FastAPI con PostgreSQL.
 
 ---
 

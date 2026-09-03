@@ -1,4 +1,4 @@
-﻿# compose.yaml — Inbox IA Business
+# compose.yaml — Inbox IA Business
 # Uso: exclusivamente para desarrollo local.
 # Este archivo no debe usarse en produccion sin revision de seguridad adicional.
 #
@@ -9,7 +9,7 @@ services:
     image: postgres:16.9
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "5434:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
