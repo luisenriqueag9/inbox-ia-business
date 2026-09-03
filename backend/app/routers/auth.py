@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.database import get_db
 from app.schemas import RegisterRequest, RegisterResponse, LoginRequest, LoginResponse
+from app.dependencies import get_current_user
 from app.models import Company, CompanyStatus, User, Session as SessionModel
 from app.security import hash_password, verify_password, generate_session_token, hash_session_token
 from datetime import datetime, timezone, timedelta
@@ -78,3 +79,7 @@ def register(request: RegisterRequest, db: DBSession = Depends(get_db)):
         raise
 
     return RegisterResponse(company=company, user=user)
+
+@router.get("/me", response_model=LoginResponse)
+def me(current_user: User = Depends(get_current_user)):
+    return LoginResponse(company=current_user.company, user=current_user)
