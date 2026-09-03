@@ -34,6 +34,22 @@ class UserResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("email")
+    @classmethod
+    def lower_email(cls, v: str) -> str:
+        if isinstance(v, str):
+            return v.lower()
+        return v
+
+class LoginResponse(BaseModel):
+    company: CompanyResponse
+    user: UserResponse
 class RegisterResponse(BaseModel):
     company: CompanyResponse
     user: UserResponse
+
+
