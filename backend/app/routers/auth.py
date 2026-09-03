@@ -5,8 +5,34 @@ from sqlalchemy.exc import IntegrityError
 
 from app.database import get_db
 from app.schemas import RegisterRequest, RegisterResponse
-from app.models import Company, User
-from app.security import hash_password
+from app.models import Company, CompanyStatus, User
+from app.security import hash_password, verify_password
+
+
+def authenticate_user(email: str, password: str, db: Session) -> User:
+    """Valida credenciales y estado de la empresa.
+
+    - Busca el usuario por email.
+    - Si no existe o la contraseña es incorrecta, lanza 401.
+    - Si la empresa está suspendida, lanza 403.
+    - Si todo es correcto, devuelve el objeto ``User``.
+    """
+    stmt = select(User).where(User.email == email)
+    user = db.execute(stmt).scalars().first()
+    if not user or not verify_password(password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales incorrectas."
+        )
+
+    if user.company.status == CompanyStatus.SUSPENDED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="La empresa está suspendida."
+        )
+    return user
+
+
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
