@@ -2,8 +2,11 @@ from fastapi import FastAPI, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.database import check_db_connection
+from app.routers import auth
 
 app = FastAPI(title="Inbox IA Business API", version="0.0.1")
+
+app.include_router(auth.router)
 
 
 @app.get("/")
