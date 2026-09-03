@@ -1,4 +1,4 @@
-﻿# Development Log — Inbox IA Business
+# Development Log — Inbox IA Business
 
 ## Dia 1 — v0.0.1
 
@@ -60,3 +60,44 @@ v0.0.1 tecnicamente funcional y preparada para su primera version estable.
 ### Proximo paso
 
 Inicializar/controlar correctamente el repositorio Git y crear el primer commit estable antes de comenzar v0.0.2.
+
+---
+
+## Dia 2 — v0.0.2 (en curso)
+
+Fecha: 2026-09-03
+
+### Objetivo
+
+Incorporar PostgreSQL como base de datos de desarrollo local antes de implementar modelos de datos y logica de negocio.
+
+### Completado
+
+- Configuracion de Docker Compose con servicio PostgreSQL (`compose.yaml`).
+- Actualizacion de `.env.example` con las variables requeridas por PostgreSQL.
+- Infraestructura PostgreSQL validada manualmente (ver seccion Validaciones).
+
+### Validaciones realizadas
+
+- `docker compose config --quiet` finalizo correctamente con las variables configuradas.
+- PostgreSQL 16.9 se levanto mediante `docker compose up -d`.
+- El contenedor alcanzo estado `healthy` segun el healthcheck configurado con `pg_isready`.
+- Se ejecuto `SELECT version();` correctamente desde el contenedor.
+- Se creo una tabla temporal (`persistence_test`) y se inserto una fila para probar persistencia.
+- Se ejecuto `docker compose down`, destruyendo el contenedor pero conservando el volumen `inbox_ia_postgres_data`.
+- Se recreo el contenedor y se comprobo que el dato previo seguia existiendo.
+- Se elimino la tabla temporal; `\dt` confirmo que la base quedo sin tablas de prueba.
+
+### Proximo paso
+
+- Conectar FastAPI con PostgreSQL: integrar SQLAlchemy y Alembic, y definir los primeros modelos multiempresa.
+
+### Decisiones de esta sesion
+
+- Se fija PostgreSQL 16.9 para evitar cambios inesperados de version durante el desarrollo.
+- El servicio se llama `db` para mantener nombres cortos y convencionales.
+- Las credenciales se inyectan via variables de entorno; nunca se colocan valores reales en `compose.yaml`.
+- El volumen Docker se nombra explicitamente (`inbox_ia_postgres_data`) para facilitar su identificacion y gestion.
+- Se incluye healthcheck con `pg_isready` para garantizar que el servicio este listo antes de conectar el backend.
+- `restart: unless-stopped` es adecuado para desarrollo local sin querer reinicio automatico permanente.
+- `DATABASE_URL` se documenta en `.env.example` como variable de configuracion para proporcionar al backend la URL de conexion. El driver de conexion (psycopg, asyncpg, etc.) se decidira cuando se integre SQLAlchemy.

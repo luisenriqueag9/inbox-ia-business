@@ -1,18 +1,14 @@
 # PROJECT STATE
 
 **Proyecto:** Inbox IA Business
-**Version actual:** v0.0.1
+**Version actual:** v0.0.2 (en curso)
 **Fase actual:** Fase 1 - MVP
 
 ---
 
-## Objetivo de v0.0.1
+## Completado en v0.0.1
 
 Establecer los cimientos tecnicos y comprobar que frontend y backend pueden ejecutarse correctamente.
-
----
-
-## Funciones terminadas
 
 - Estructura inicial del proyecto.
 - Frontend React + TypeScript (Vite).
@@ -24,10 +20,20 @@ Establecer los cimientos tecnicos y comprobar que frontend y backend pueden ejec
 
 ---
 
+## En curso — v0.0.2
+
+- PostgreSQL 16.9 para desarrollo local configurado y validado mediante Docker Compose.
+  - Contenedor alcanza estado `healthy`.
+  - Persistencia mediante volumen Docker verificada (`inbox_ia_postgres_data`).
+- Pendiente: integrar SQLAlchemy y Alembic en el backend.
+- Pendiente: definir modelos multiempresa iniciales.
+- Pendiente: conectar FastAPI con PostgreSQL.
+
+---
+
 ## Pendiente para proximas versiones
 
-- PostgreSQL.
-- Modelo multiempresa.
+- Modelo multiempresa (SQLAlchemy + Alembic).
 - Registro de usuarios.
 - Autenticacion.
 - Creacion de empresa.
