@@ -8,7 +8,7 @@
 
 ## Completado en v0.0.1
 
-Establecer los cimientos tecnicos y comprobar que frontend y backend pueden ejecutarse correctamente.
+Establecer los cimientos técnicos y comprobar que frontend y backend pueden ejecutarse correctamente.
 
 - Estructura inicial del proyecto.
 - Frontend React + TypeScript (Vite).
@@ -23,10 +23,10 @@ Establecer los cimientos tecnicos y comprobar que frontend y backend pueden ejec
 ## Completado en v0.0.2
 
 - PostgreSQL 16.9 para desarrollo local configurado y validado mediante Docker Compose.
-- Conexion FastAPI -> PostgreSQL completada (SQLAlchemy 2.x + Psycopg 3).
-- Alembic configurado y utilizando la conexion central del backend.
-- Modelos iniciales multiempresa (Company y User) definidos en una unica Base declarativa.
-- Primera migracion generada, validada (upgrade/downgrade exitoso) y aplicada en HEAD.
+- Conexión FastAPI → PostgreSQL completada (SQLAlchemy 2.x + Psycopg 3).
+- Alembic configurado y utilizando la conexión central del backend.
+- Modelos iniciales multiempresa (Company y User) definidos en una única Base declarativa.
+- Primera migración generada, validada (upgrade/downgrade exitoso) y aplicada en HEAD.
 
 ---
 
@@ -34,36 +34,28 @@ Establecer los cimientos tecnicos y comprobar que frontend y backend pueden ejec
 
 - Preparación de sesiones SQLAlchemy mediante SessionLocal/get_db.
 - Hashing seguro de contraseñas con Argon2 mediante pwdlib.
-- Schemas Pydantic para registro.
-- POST `/auth/register`.
-- Creación atómica de Company + primer User.
-- Detección de email duplicado.
-- Rollback ante errores de integridad/escritura.
-- Modelo Session.
-- Migración Alembic para sessions.
-- Validación upgrade -> downgrade -> upgrade de migración.
-- Alembic check limpio.
-- Decisión de autenticación mediante sesiones opacas server-side persistidas en PostgreSQL y transportadas mediante cookie HttpOnly.
+- Schemas Pydantic para registro y login.
+- POST `/auth/register` (creación atómica de Company + User, detección de email duplicado, rollback).
+- Modelo Session y migración Alembic correspondiente.
+- Generación criptográficamente segura de tokens de sesión y almacenamiento del SHA‑256 del token.
+- Autenticación de credenciales y rechazo de login para Company **SUSPENDED**.
+- Creación de sesiones persistentes con duración de 7 días.
+- Cookie HttpOnly `session` con SameSite=Lax; **Secure** configurable mediante `COOKIE_SECURE`.
+- GET `/auth/me` con validación backend de sesión, expiración y estado de empresa.
+- POST `/auth/logout` idempotente, invalida exclusivamente la sesión actual y elimina la cookie.
+- Pruebas reales contra PostgreSQL validaron registro, login, `/auth/me`, logout, aislamiento entre dos sesiones del mismo usuario durante logout, rollback ante fallo de commit y comportamiento `COOKIE_SECURE` false/true.
 
 ---
 
-## Pendiente para proximas versiones
+## Problemas conocidos
 
-- **SIGUIENTE TAREA:** Implementar generación y hashing seguro del token de sesión.
-- Generación criptográficamente segura del token de sesión.
-- Hash determinista del token para token_hash.
-- POST `/auth/login`.
-- Creación/configuración de cookie HttpOnly.
-- Autenticación de requests.
-- Autorización/aislamiento multiempresa basado en usuario autenticado.
-- POST `/auth/logout`.
-- Frontend de registro/login.
-- Mensajes manuales.
-- Bandeja de entrada.
-- Clasificacion mediante IA.
-- Respuesta sugerida.
-- Edicion de respuesta.
-- Marcar conversacion como atendida.
+- No hay problemas bloqueantes conocidos en la versión actual.
+
+---
+
+## Pendiente para próximas versiones
+
+- Revisar alcance restante de v0.0.3 y decidir si la versión puede cerrarse.
 
 ---
 
@@ -73,4 +65,4 @@ Establecer los cimientos tecnicos y comprobar que frontend y backend pueden ejec
 - Instagram.
 - TikTok.
 - Firebase.
-- Respuestas automaticas mediante IA.
+- Respuestas automáticas mediante IA.
