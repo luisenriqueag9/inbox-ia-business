@@ -87,3 +87,18 @@ Los usuarios pertenecientes a empresas SUSPENDED no pueden iniciar sesión ni ut
 
 27. **No agregar índices compuestos hasta que volumen o query plans lo justifiquen.**
     Los índices simples actuales son suficientes para la etapa MVP. Los candidatos futuros son `conversations(company_id, updated_at DESC, id DESC)` y `messages(conversation_id, created_at DESC, id DESC)`, sujetos a medición.
+
+28. **Detalle de conversación (`GET /conversations/{conversation_id}`).**
+    Filtra en SQL simultáneamente por `conversation_id` y `current_user.company_id`. Inexistente y cross-company devuelven el mismo HTTP 404.
+
+29. **Historial de mensajes.**
+    Los mensajes del detalle se ordenan `created_at ASC, id ASC`. No se paginan en este incremento/MVP inicial por el volumen esperado. La paginación podrá introducirse si medición/volumen lo justifica.
+
+30. **Marcar atendida (`PATCH /conversations/{conversation_id}/attended`).**
+    Es una operación explícita en lugar de un PATCH genérico para mantener pequeño el contrato MVP.
+
+31. **Idempotencia de marcar atendida.**
+    `OPEN` -> `ATTENDED` actualiza explícitamente `updated_at`. `ATTENDED` -> `ATTENDED` devuelve éxito pero no modifica `updated_at`, evitando alterar artificialmente el orden de la bandeja simplemente por repetir la petición.
+
+32. **Transacción de ATTENDED.**
+    La respuesta se materializa antes del commit; el commit es la última operación en DB; no se hace refresh posterior. SQLAlchemyError produce rollback y un HTTP 500 genérico.

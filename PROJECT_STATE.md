@@ -63,55 +63,67 @@ E. **Data temporal:** Puede existir data de pruebas anteriores que no fue posibl
 
 ---
 
-## v0.0.4 – Mensajes y conversaciones manuales (EN CURSO)
+## v0.0.4 – Mensajes y conversaciones manuales (TERMINADA)
 
 Objetivo: crear la base mínima del dominio de Inbox IA Business para introducir conversaciones/mensajes manuales de prueba asociados a una empresa, con aislamiento estricto por `company_id`.
 
-### Validado en v0.0.4
+### Validado funcionalmente en v0.0.4
 
 **Modelos y migración:**
-- Modelos `Conversation` y `Message` definidos en `app/models.py`.
-- `Conversation` pertenece a `Company` mediante `company_id` (FK indexada).
+- Modelos `Conversation` y `Message` validados en PostgreSQL real.
+- `Conversation` pertenece a `Company` mediante `company_id`.
 - `Message` pertenece a `Conversation`; tenancy derivado de Conversation, sin duplicar `company_id`.
-- Enums `ConversationStatus` (OPEN / ATTENDED) y `MessageDirection` (INBOUND / OUTBOUND).
+- Reversibilidad probada: upgrade/downgrade/upgrade (incluye gestión de enums en PostgreSQL).
 - Migración Alembic `1df139d55259_create_conversations_and_messages.py`.
-- Upgrade, downgrade y re-upgrade probados contra PostgreSQL real.
-- Enums PostgreSQL correctamente eliminados y recreados en downgrade/re-upgrade.
-- FKs e índices básicos verificados.
 
-**`POST /conversations`:**
-- `company_id` derivado del usuario autenticado en backend; el cliente no puede elegirlo.
-- Conversation + primer Message INBOUND creados en una única transacción atómica.
-- Secuencia transaccional: `db.add(conv)` → `db.flush()` → `db.add(msg)` → `db.flush()` → construir respuesta → `db.commit()`. Sin `db.refresh()` post-commit.
-- Rollback real ante `SQLAlchemyError` antes de commit verificado contra PostgreSQL real mediante trigger temporal.
-- Empresa SUSPENDED bloqueada por autenticación central (403).
-- Ruta canónica: `POST /conversations` (sin barra final, sin depender de redirect).
+**Aislamiento y Autenticación:**
+- Aislamiento multiempresa implementado a nivel de backend.
+- `company_id` derivado del usuario autenticado; el cliente no puede elegirlo.
+- Empresas SUSPENDED bloqueadas centralmente (403).
 
-**`GET /conversations`:**
-- Filtro SQL estricto por `company_id` del usuario autenticado.
-- Paginación backend: `page` (default 1, min 1) y `page_size` (default 20, min 1, max 100).
-- Orden: `updated_at DESC, id DESC`.
-- Último mensaje por conversación mediante `LEFT OUTER JOIN LATERAL` (sin N+1).
-- Conversation sin mensajes devuelve `last_message: null`; permanece visible.
-- Aislamiento entre empresas verificado.
-- Ruta canónica: `GET /conversations` (sin barra final).
+**Endpoints de listado y creación:**
+- `POST /conversations`: Conversation + primer Message INBOUND en transacción atómica.
+- `GET /conversations`: Paginado (offset pagination aceptada para MVP).
+- Bandeja ordenada `updated_at DESC, id DESC`.
+- `last_message` resuelto eficientemente mediante `LEFT OUTER JOIN LATERAL`.
+- Conversación sin mensajes soportada correctamente.
+
+**Endpoints de detalle y actualización (NUEVOS):**
+- `GET /conversations/{conversation_id}`: Filtra simultáneamente por `conversation_id` y `current_user.company_id`.
+- Mensajes del detalle ordenados `created_at ASC, id ASC`.
+- `PATCH /conversations/{conversation_id}/attended`: Operación ATTENDED idempotente.
+- Segunda llamada ATTENDED no modifica `updated_at`.
+- Rollback real de escritura validado empíricamente en PostgreSQL.
 
 **Otros:**
 - `/health` y `/health/db` funcionando correctamente.
+- **Validación integrada final**: 22/22 pruebas PASS contra PostgreSQL real. Alembic current == head == 1df139d55259.
 
 ---
 
-### Siguiente paso inmediato
+### Siguiente tarea
 
-1. Cerrar documentalmente y mediante Git el hito backend Conversation/Message ya validado (commit de cierre de hito).
-2. Definir el siguiente incremento pequeño de v0.0.4.
+1. Cierre Git manual de v0.0.4:
+   - commit
+   - tag v0.0.4
+   - push de main y tag
 
 ---
+
+## Pendiente dentro de Fase 1 (Phase 1 NO terminada)
+
+- Frontend funcional necesario para operar el MVP.
+- Clasificación mediante IA.
+- Detección de oportunidad comercial.
+- Intención y prioridad.
+- Respuesta sugerida.
+- Edición humana de respuesta.
 
 ## Fuera de Fase 1
 
-- WhatsApp Business.
+- WhatsApp Business real.
 - Instagram.
 - TikTok.
-- Firebase.
-- Respuestas automáticas mediante IA.
+- Firebase / fuentes de conocimiento de fases posteriores.
+- Envío automático mediante IA.
+- Índices compuestos (no requeridos todavía).

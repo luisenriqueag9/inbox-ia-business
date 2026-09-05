@@ -1,3 +1,5 @@
+import uuid
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session as DBSession
@@ -280,3 +282,110 @@ def list_conversations(
         page_size=page_size,
         total=total,
     )
+
+# ---------------------------------------------------------------------------
+# GET /conversations/{conversation_id} (detail with all messages)
+# ---------------------------------------------------------------------------
+@router.get("/{conversation_id}", response_model=ConversationResponse)
+def get_conversation(
+    conversation_id: uuid.UUID,
+    current_user=Depends(get_current_user),
+    db: DBSession = Depends(get_db),
+):
+    # Query 1: fetch Conversation with company isolation in SQL.
+    # Both "not found" and "belongs to another company" return 404,
+    # preventing cross-company existence disclosure.
+    conv_stmt = select(Conversation).where(
+        Conversation.id == conversation_id,
+        Conversation.company_id == current_user.company_id,
+    )
+    conv = db.execute(conv_stmt).scalars().first()
+    if conv is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversación no encontrada.")
+
+    # Query 2: fetch all Messages for this Conversation, ordered ASC.
+    msgs_stmt = (
+        select(Message)
+        .where(Message.conversation_id == conv.id)
+        .order_by(Message.created_at.asc(), Message.id.asc())
+    )
+    msgs = db.execute(msgs_stmt).scalars().all()
+
+    return ConversationResponse(
+        id=conv.id,
+        customer_name=conv.customer_name,
+        status=conv.status,
+        created_at=conv.created_at,
+        updated_at=conv.updated_at,
+        messages=[
+            MessageResponse(
+                id=m.id,
+                direction=m.direction,
+                content=m.content,
+                created_at=m.created_at,
+            )
+            for m in msgs
+        ],
+    )
+
+# ---------------------------------------------------------------------------
+# PATCH /conversations/{conversation_id}/attended
+# ---------------------------------------------------------------------------
+@router.patch("/{conversation_id}/attended", response_model=ConversationResponse)
+def mark_attended(
+    conversation_id: uuid.UUID,
+    current_user=Depends(get_current_user),
+    db: DBSession = Depends(get_db),
+):
+    # Load Conversation with company isolation in SQL.
+    # 404 for both not-found and cross-company (no existence disclosure).
+    conv_stmt = select(Conversation).where(
+        Conversation.id == conversation_id,
+        Conversation.company_id == current_user.company_id,
+    )
+    conv = db.execute(conv_stmt).scalars().first()
+    if conv is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversación no encontrada.")
+
+    try:
+        if conv.status == ConversationStatus.OPEN:
+            # OPEN -> ATTENDED: mutate, flush to materialize, then commit.
+            conv.status = ConversationStatus.ATTENDED
+            conv.updated_at = datetime.now(timezone.utc)
+            db.flush()  # materialize updated values before building response
+
+        # Load messages for response (ordered ASC regardless of path taken).
+        msgs_stmt = (
+            select(Message)
+            .where(Message.conversation_id == conv.id)
+            .order_by(Message.created_at.asc(), Message.id.asc())
+        )
+        msgs = db.execute(msgs_stmt).scalars().all()
+
+        # Build response in memory before committing.
+        response = ConversationResponse(
+            id=conv.id,
+            customer_name=conv.customer_name,
+            status=conv.status,
+            created_at=conv.created_at,
+            updated_at=conv.updated_at,
+            messages=[
+                MessageResponse(
+                    id=m.id,
+                    direction=m.direction,
+                    content=m.content,
+                    created_at=m.created_at,
+                )
+                for m in msgs
+            ],
+        )
+
+        # Commit as last DB operation (no-op if already ATTENDED).
+        db.commit()
+        return response
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor.",
+        )
