@@ -59,4 +59,31 @@ Registro de decisiones tecnicas del proyecto Inbox IA Business.
     Para el MVP, la autenticación web se realizará mediante sesiones almacenadas en PostgreSQL y expuestas mediante cookie HttpOnly, evitando JWT y localStorage. El identificador (`token_hash`) se persiste de forma segura (hasheado) sin guardar el token en texto claro, y la empresa se resuelve a través de la relación de `User` en lugar de duplicar `company_id` en la sesión.
 
 # 19. **Bloqueo de empresas SUSPENDED**
+
 Los usuarios pertenecientes a empresas SUSPENDED no pueden iniciar sesión ni utilizar sesiones existentes. La validación se realiza en backend como parte de la autenticación.
+
+---
+
+20. **Conversation es el límite directo de tenancy.**
+    `Conversation` contiene `company_id` como referencia explícita a la empresa propietaria. `Message` deriva tenancy a través de su `Conversation`; no duplica `company_id` en la tabla `messages`. Esto centraliza el control de aislamiento en la entidad raíz del dominio.
+
+21. **`company_id` para crear conversaciones se obtiene exclusivamente del usuario autenticado en backend.**
+    El cliente nunca elige ni puede influir en el `company_id` de una conversación. El backend lo toma de `current_user.company_id` en la dependencia de autenticación.
+
+22. **Conversation + primer Message se crean en una única transacción atómica.**
+    La secuencia es: `db.flush()` de Conversation (para materializar ID y timestamps), `db.flush()` de Message, construcción de la respuesta en memoria, `db.commit()`. No se realizan `db.refresh()` posteriores al commit. Ante cualquier `SQLAlchemyError`, `db.rollback()` revierte ambas filas.
+
+23. **Ruta canónica REST sin barra final.**
+    Los endpoints se registran como `POST /conversations` y `GET /conversations` (sin barra final). No se registran rutas duplicadas únicamente para evitar redirects; el cliente debe usar la ruta canónica directamente.
+
+24. **Paginación backend en la bandeja; offset pagination para MVP.**
+    La lista de conversaciones aplica paginación con `page` (default 1, min 1) y `page_size` (default 20, min 1, max 100). Offset pagination es suficiente para el volumen del MVP; cursor pagination se evaluará cuando el volumen o la medición lo justifiquen.
+
+25. **Orden de bandeja: `updated_at DESC, id DESC`.**
+    Las conversaciones se ordenan por actividad más reciente (`updated_at DESC`), con `id DESC` como desempate determinista. Al agregar nuevos mensajes en el futuro, la operación deberá actualizar explícitamente `Conversation.updated_at` para que el orden de bandeja refleje la actividad reciente.
+
+26. **Último mensaje por conversación mediante `LEFT OUTER JOIN LATERAL`.**
+    Se usa un subquery lateral con `LIMIT 1` en lugar de múltiples queries individuales, evitando el problema N+1. Una conversación sin mensajes permanece visible con `last_message: null`. El desempate dentro del lateral usa `created_at DESC, id DESC`.
+
+27. **No agregar índices compuestos hasta que volumen o query plans lo justifiquen.**
+    Los índices simples actuales son suficientes para la etapa MVP. Los candidatos futuros son `conversations(company_id, updated_at DESC, id DESC)` y `messages(conversation_id, created_at DESC, id DESC)`, sujetos a medición.
