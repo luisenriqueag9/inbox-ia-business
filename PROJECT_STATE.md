@@ -1,7 +1,7 @@
 # PROJECT STATE
 
 **Proyecto:** Inbox IA Business
-**Version actual:** v0.0.3 — EN CURSO
+**Version actual:** v0.0.4 — EN CURSO
 **Fase actual:** Fase 1 / MVP
 
 ---
@@ -30,7 +30,7 @@ Establecer los cimientos técnicos y comprobar que frontend y backend pueden eje
 
 ---
 
-## Completado en v0.0.3 (hasta el momento)
+## v0.0.3 – TERMINADA
 
 - Preparación de sesiones SQLAlchemy mediante SessionLocal/get_db.
 - Hashing seguro de contraseñas con Argon2 mediante pwdlib.
@@ -53,11 +53,12 @@ Establecer los cimientos técnicos y comprobar que frontend y backend pueden eje
 
 ---
 
-## Pendiente para próximas versiones
+## v0.0.4 – Mensajes y conversaciones manuales
 
-- Revisar alcance restante de v0.0.3 y decidir si la versión puede cerrarse.
+Objetivo inicial de v0.0.4:
+- Crear la base mínima del dominio de Inbox IA Business para poder introducir conversaciones/mensajes manuales de prueba asociados a una empresa, manteniendo aislamiento estricto por `company_id`.
+- No se documentan todavía los modelos concretos de Conversation/Message.
 
----
 
 ## Fuera de Fase 1
 
